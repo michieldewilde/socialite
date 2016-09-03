@@ -78,7 +78,7 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     public function buildProvider($provider)
     {
-        return new $provider();
+        return new $provider($this->app['request']);
     }
 
     /**
