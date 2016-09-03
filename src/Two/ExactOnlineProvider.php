@@ -1,6 +1,6 @@
 <?php
 
-namespace App\CloudServices\OAuth2;
+namespace Laravel\Socialite\Two;
 
 use Laravel\Socialite\Two\ProviderInterface;
 use GuzzleHttp\Psr7;
