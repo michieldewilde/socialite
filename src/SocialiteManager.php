@@ -29,10 +29,8 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createGithubDriver()
     {
-        $config = $this->app['config']['services.github'];
-
         return $this->buildProvider(
-            'Laravel\Socialite\Two\GithubProvider', $config
+            'Laravel\Socialite\Two\GithubProvider'
         );
     }
 
@@ -43,10 +41,8 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createFacebookDriver()
     {
-        $config = $this->app['config']['services.facebook'];
-
         return $this->buildProvider(
-            'Laravel\Socialite\Two\FacebookProvider', $config
+            'Laravel\Socialite\Two\FacebookProvider'
         );
     }
 
@@ -57,10 +53,8 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createGoogleDriver()
     {
-        $config = $this->app['config']['services.google'];
-
         return $this->buildProvider(
-            'Laravel\Socialite\Two\GoogleProvider', $config
+            'Laravel\Socialite\Two\GoogleProvider'
         );
     }
 
@@ -71,10 +65,8 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createLinkedinDriver()
     {
-        $config = $this->app['config']['services.linkedin'];
-
         return $this->buildProvider(
-          'Laravel\Socialite\Two\LinkedInProvider', $config
+          'Laravel\Socialite\Two\LinkedInProvider'
         );
     }
 
@@ -82,15 +74,11 @@ class SocialiteManager extends Manager implements Contracts\Factory
      * Build an OAuth 2 provider instance.
      *
      * @param  string  $provider
-     * @param  array  $config
      * @return \Laravel\Socialite\Two\AbstractProvider
      */
-    public function buildProvider($provider, $config)
+    public function buildProvider($provider)
     {
-        return new $provider(
-            $this->app['request'], $config['client_id'],
-            $config['client_secret'], $config['redirect']
-        );
+        return new $provider();
     }
 
     /**

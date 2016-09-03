@@ -7,11 +7,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use GuzzleHttp\ClientInterface;
+use Laravel\Socialite\ConfigTrait;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider as ProviderContract;
 
 abstract class AbstractProvider implements ProviderContract
 {
+    use ConfigTrait;
+    
     /**
      * The HTTP request instance.
      *
