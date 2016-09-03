@@ -39,6 +39,18 @@ class SocialiteManager extends Manager implements Contracts\Factory
      *
      * @return \Laravel\Socialite\Two\AbstractProvider
      */
+    protected function createExactOnlineDriver()
+    {
+        return $this->buildProvider(
+            'Laravel\Socialite\Two\ExactOnlineProvider'
+        );
+    }
+
+    /**
+     * Create an instance of the specified driver.
+     *
+     * @return \Laravel\Socialite\Two\AbstractProvider
+     */
     protected function createFacebookDriver()
     {
         return $this->buildProvider(
