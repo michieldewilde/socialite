@@ -100,10 +100,8 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createTwitterDriver()
     {
-        $config = $this->app['config']['services.twitter'];
-
         return new TwitterProvider(
-            $this->app['request'], new TwitterServer($this->formatConfig($config))
+            $this->app['request'], new TwitterServer(null)
         );
     }
 

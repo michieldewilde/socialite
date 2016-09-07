@@ -113,4 +113,15 @@ abstract class AbstractProvider implements ProviderContract
 
         return $this;
     }
+
+    /**
+     * @param Config $config
+     *
+     * @return $this
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = $this->server->setConfig($config);
+        return $this;
+    }
 }
