@@ -12,7 +12,7 @@ use Laravel\Socialite\Contracts\Provider as ProviderContract;
 abstract class AbstractProvider implements ProviderContract
 {
     use ConfigTrait;
-    
+
     /**
      * The HTTP request instance.
      *
