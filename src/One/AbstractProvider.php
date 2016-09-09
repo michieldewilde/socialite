@@ -4,15 +4,12 @@ namespace Laravel\Socialite\One;
 
 use Illuminate\Http\Request;
 use InvalidArgumentException;
-use Laravel\Socialite\ConfigTrait;
 use League\OAuth1\Client\Server\Server;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider as ProviderContract;
 
 abstract class AbstractProvider implements ProviderContract
 {
-    use ConfigTrait;
-
     /**
      * The HTTP request instance.
      *
@@ -111,17 +108,6 @@ abstract class AbstractProvider implements ProviderContract
     {
         $this->request = $request;
 
-        return $this;
-    }
-
-    /**
-     * @param Config $config
-     *
-     * @return $this
-     */
-    public function setConfig(Config $config)
-    {
-        $this->config = $this->server->setConfig($config);
         return $this;
     }
 }

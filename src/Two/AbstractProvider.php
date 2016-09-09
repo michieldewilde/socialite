@@ -7,14 +7,11 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use GuzzleHttp\ClientInterface;
-use Laravel\Socialite\ConfigTrait;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider as ProviderContract;
 
 abstract class AbstractProvider implements ProviderContract
 {
-    use ConfigTrait;
-    
     /**
      * The HTTP request instance.
      *
@@ -89,20 +86,23 @@ abstract class AbstractProvider implements ProviderContract
      * Create a new provider instance.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  string  $clientId
-     * @param  string  $clientSecret
-     * @param  string  $redirectUrl
+     * @param  array  $config
+     *
      * @return void
      */
-    public function __construct(Request $request)
+    public function __construct(Request $request, $config)
     {
         $this->request = $request;
+        $this->clientId = $config["client_id"];
+        $this->clientSecret = $config["client_secret"];
+        $this->redirectUrl = $config["redirect"];
     }
 
     /**
      * Get the authentication URL for the provider.
      *
      * @param  string  $state
+     *
      * @return string
      */
     abstract protected function getAuthUrl($state);
@@ -118,6 +118,7 @@ abstract class AbstractProvider implements ProviderContract
      * Get the raw user for the given access token.
      *
      * @param  string  $token
+     *
      * @return array
      */
     abstract protected function getUserByToken($token);

@@ -93,7 +93,7 @@ class ExactOnlineProvider extends AbstractProvider implements ProviderInterface
      */
     protected function getInstanceUri()
     {
-        return $this->getConfig('instance_uri', 'https://start.exactonline.nl/api/');
+        return 'https://start.exactonline.nl/api/';
     }
 
     /**

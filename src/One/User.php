@@ -2,9 +2,9 @@
 
 namespace Laravel\Socialite\One;
 
-use Laravel\Socialite\AbstractUser;
+use Laravel\Socialite\AbstractUser as BaseUser;
 
-class User extends AbstractUser
+class User extends BaseUser
 {
     /**
      * The user's access token.
@@ -21,6 +21,15 @@ class User extends AbstractUser
     public $tokenSecret;
 
     /**
+     * The User Credentials.
+     *
+     * e.g. access_token, refresh_token, etc.
+     *
+     * @var array
+     */
+    public $accessTokenResponseBody;
+
+    /**
      * Set the token on the user.
      *
      * @param  string  $token
@@ -32,6 +41,21 @@ class User extends AbstractUser
         $this->token = $token;
         $this->tokenSecret = $tokenSecret;
 
+        return $this;
+    }
+
+    /**
+     * Set the credentials on the user.
+     *
+     * Might include things such as the token and refresh token
+     *
+     * @param array $accessTokenResponseBody
+     *
+     * @return $this
+     */
+    public function setAccessTokenResponseBody(array $accessTokenResponseBody)
+    {
+        $this->accessTokenResponseBody = $accessTokenResponseBody;
         return $this;
     }
 }

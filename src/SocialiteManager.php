@@ -3,11 +3,9 @@
 namespace Laravel\Socialite;
 
 use InvalidArgumentException;
-use Illuminate\Support\Manager;
-use Laravel\Socialite\One\TwitterProvider;
-use Laravel\Socialite\One\BitbucketProvider;
+use Laravel\Socialite\DriverManager as Manager;
+use Laravel\Socialite\One\Server;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
-use League\OAuth1\Client\Server\Bitbucket as BitbucketServer;
 
 class SocialiteManager extends Manager implements Contracts\Factory
 {
@@ -15,34 +13,102 @@ class SocialiteManager extends Manager implements Contracts\Factory
      * Get a driver instance.
      *
      * @param  string  $driver
+     *
      * @return mixed
      */
-    public function with($driver)
+    public function with($driver, $config)
     {
-        return $this->driver($driver);
+        return $this->driver($driver, $config);
     }
+
+    /**
+     * @param string           $providerClass
+     * @param null|string      $oauth1Server
+     *
+     * @return \Laravel\Socialite\One\AbstractProvider|\Laravel\Socialite\Two\AbstractProvider
+     */
+    protected function buildProvider($providerClass, $oauth1Server)
+    {
+        if ($this->isOAuth1($oauth1Server)) {
+            $this->classExists($oauth1Server);
+            return $this->buildOAuth1Provider($providerClass, $oauth1Server);
+        }
+        return $this->buildOAuth2Provider($providerClass);
+    }
+
+    /**
+     * Build an OAuth 1 provider instance.
+     *
+     * @param  string  $providerClass must extend Laravel\Socialite\One\AbstractProvider
+     * @param  string  $oauth1Server must extend League\OAuth1\Client\Server\Server
+     * @param  array   $config
+     *
+     * @return \Laravel\Socialite\One\AbstractProvider
+     */
+    public function buildOAuth1Provider($providerClass, $oauth1Server, $config)
+    {
+        // check if parameters are extending the right classes
+        $this->classExtends($providerClass, \Laravel\Socialite\One\AbstractProvider::class);
+        $this->classExtends($oauth1Server, \League\OAuth1\Client\Server\Server::class);
+
+        // not getting config because setting it dynamicly after we have created it
+        // creating new provider with empty config
+        $provider = new $providerClass($this->app['request'], new $oauth1Server($config));
+
+        return $provider;
+    }
+
+    /**
+     * Build an OAuth 2 provider instance.
+     *
+     * @param   string  $providerClass must extend Laravel\Socialite\Two\AbstractProvider
+     * @param   array   $config
+     *
+     * @return  \Laravel\Socialite\Two\AbstractProvider
+     */
+    public function buildOAuth2Provider($providerClass, $config)
+    {
+        // check if parameters are extending the right classes
+        $this->classExtends($providerClass, \Laravel\Socialite\Two\AbstractProvider::class);
+
+        $provider = new $providerClass($this->app['request'], $config);
+
+        return $provider;
+    }
+
+    /**
+     *
+     * OAuth 2 providers
+     *
+     */
 
     /**
      * Create an instance of the specified driver.
      *
+     * @param   array   $config
+     *
      * @return \Laravel\Socialite\Two\AbstractProvider
      */
-    protected function createGithubDriver()
+    protected function createGithubDriver($config)
     {
-        return $this->buildProvider(
-            'Laravel\Socialite\Two\GithubProvider'
+        return $this->buildOAuth2Provider(
+            'Laravel\Socialite\Two\GithubProvider',
+            $config
         );
     }
 
     /**
      * Create an instance of the specified driver.
      *
+     * @param   array   $config
+     *
      * @return \Laravel\Socialite\Two\AbstractProvider
      */
-    protected function createExactOnlineDriver()
+    protected function createExactOnlineDriver($config)
     {
-        return $this->buildProvider(
-            'Laravel\Socialite\Two\ExactOnlineProvider'
+        return $this->buildOAuth2Provider(
+            'Laravel\Socialite\Two\ExactOnlineProvider',
+            $config
         );
     }
 
@@ -53,8 +119,9 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createFacebookDriver()
     {
-        return $this->buildProvider(
-            'Laravel\Socialite\Two\FacebookProvider'
+        return $this->buildOAuth2Provider(
+            'Laravel\Socialite\Two\FacebookProvider',
+            $config
         );
     }
 
@@ -65,8 +132,9 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createGoogleDriver()
     {
-        return $this->buildProvider(
-            'Laravel\Socialite\Two\GoogleProvider'
+        return $this->buildOAuth2Provider(
+            'Laravel\Socialite\Two\GoogleProvider',
+            $config
         );
     }
 
@@ -77,45 +145,29 @@ class SocialiteManager extends Manager implements Contracts\Factory
      */
     protected function createLinkedinDriver()
     {
-        return $this->buildProvider(
-          'Laravel\Socialite\Two\LinkedInProvider'
+        return $this->buildOAuth2Provider(
+            'Laravel\Socialite\Two\LinkedInProvider',
+            $config
         );
     }
 
     /**
-     * Build an OAuth 2 provider instance.
      *
-     * @param  string  $provider
-     * @return \Laravel\Socialite\Two\AbstractProvider
+     * OAuth 1 providers
+     *
      */
-    public function buildProvider($provider)
-    {
-        return new $provider($this->app['request']);
-    }
 
     /**
      * Create an instance of the specified driver.
      *
      * @return \Laravel\Socialite\One\AbstractProvider
      */
-    protected function createTwitterDriver()
+    protected function createTwitterDriver($config)
     {
-        return new TwitterProvider(
-            $this->app['request'], new TwitterServer(null)
-        );
-    }
-
-    /**
-     * Create an instance of the specified driver.
-     *
-     * @return \Laravel\Socialite\One\AbstractProvider
-     */
-    protected function createBitbucketDriver()
-    {
-        $config = $this->app['config']['services.bitbucket'];
-
-        return new BitbucketProvider(
-            $this->app['request'], new BitbucketServer($this->formatConfig($config))
+        return $this->buildOAuth1Provider(
+            'Laravel\Socialite\One\Twitter\Provider',
+            new TwitterServer($this->formatConfig($config)),
+            $this->formatConfig($config)
         );
     }
 
@@ -123,6 +175,7 @@ class SocialiteManager extends Manager implements Contracts\Factory
      * Format the server configuration.
      *
      * @param  array  $config
+     *
      * @return array
      */
     public function formatConfig(array $config)
@@ -135,14 +188,35 @@ class SocialiteManager extends Manager implements Contracts\Factory
     }
 
     /**
-     * Get the default driver name.
+     * Check if a server is given, which indicates that OAuth1 is used.
      *
-     * @throws \InvalidArgumentException
+     * @param string $oauth1Server
      *
-     * @return string
+     * @return bool
      */
-    public function getDefaultDriver()
+    private function isOAuth1($oauth1Server)
     {
-        throw new InvalidArgumentException('No Socialite driver was specified.');
+        return !empty($oauth1Server);
+    }
+
+    /**
+     * @param string $class
+     * @param string $baseClass
+     *
+     * @throws InvalidArgumentException
+     */
+    private function classExtends($class, $baseClass)
+    {
+        if (false === is_subclass_of($class, $baseClass)) {
+            $message = $class.' does not extend '.$baseClass;
+            throw new InvalidArgumentException($message);
+        }
+    }
+
+    private function classExists($providerClass)
+    {
+        if (!class_exists($providerClass)) {
+            throw new InvalidArgumentException("$providerClass doesn't exist");
+        }
     }
 }
