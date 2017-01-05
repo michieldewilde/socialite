@@ -100,9 +100,10 @@ abstract class AbstractProvider implements ProviderContract
     public function __construct(Request $request, $config)
     {
         $this->request = $request;
-        $this->clientId = $clientId;
-        $this->redirectUrl = $redirectUrl;
-        $this->clientSecret = $clientSecret;
+        $this->clientId = $config["client_id"];
+        $this->clientSecret = $config["client_secret"];
+        $this->redirectUrl = $config["redirect"];
+
         $this->state = Str::random(40);
     }
 
