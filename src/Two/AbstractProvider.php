@@ -81,6 +81,13 @@ abstract class AbstractProvider implements ProviderContract
      * @var bool
      */
     protected $stateless = false;
+    
+    /**
+     * State.
+     *
+     * @var string
+     */
+    protected $state;
 
     /**
      * Create a new provider instance.
@@ -93,9 +100,10 @@ abstract class AbstractProvider implements ProviderContract
     public function __construct(Request $request, $config)
     {
         $this->request = $request;
-        $this->clientId = $config["client_id"];
-        $this->clientSecret = $config["client_secret"];
-        $this->redirectUrl = $config["redirect"];
+        $this->clientId = $clientId;
+        $this->redirectUrl = $redirectUrl;
+        $this->clientSecret = $clientSecret;
+        $this->state = Str::random(40);
     }
 
     /**
@@ -138,13 +146,11 @@ abstract class AbstractProvider implements ProviderContract
      */
     public function redirect()
     {
-        $state = null;
-
         if ($this->usesState()) {
-            $this->request->session()->set('state', $state = Str::random(40));
+            $this->request->session()->set('state', $this->state);
         }
 
-        return new RedirectResponse($this->getAuthUrl($state));
+        return new RedirectResponse($this->getAuthUrl($this->state));
     }
 
     /**
@@ -402,5 +408,13 @@ abstract class AbstractProvider implements ProviderContract
         $this->parameters = $parameters;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getState()
+    {
+        return $this->state;
     }
 }
