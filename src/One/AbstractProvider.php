@@ -23,6 +23,13 @@ abstract class AbstractProvider implements ProviderContract
      * @var \League\OAuth1\Client\Server\Server
      */
     protected $server;
+    
+    /**
+     * State.
+     *
+     * @var string
+     */
+    protected $state;
 
     /**
      * Create a new provider instance.
@@ -35,6 +42,7 @@ abstract class AbstractProvider implements ProviderContract
     {
         $this->server = $server;
         $this->request = $request;
+        $this->state = $this->server->getTemporaryCredentials();
     }
 
     /**
@@ -45,10 +53,10 @@ abstract class AbstractProvider implements ProviderContract
     public function redirect()
     {
         $this->request->session()->set(
-            'oauth.temp', $temp = $this->server->getTemporaryCredentials()
+            'oauth.temp', $this->state
         );
 
-        return new RedirectResponse($this->server->getAuthorizationUrl($temp));
+        return new RedirectResponse($this->server->getAuthorizationUrl($this->state));
     }
 
     /**
@@ -109,5 +117,13 @@ abstract class AbstractProvider implements ProviderContract
         $this->request = $request;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getState()
+    {
+        return $this->state;
     }
 }
