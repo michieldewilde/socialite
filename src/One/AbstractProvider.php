@@ -124,6 +124,6 @@ abstract class AbstractProvider implements ProviderContract
      */
     public function getState()
     {
-        return $this->state->identifier;
+        return $this->state->getIdentifier();
     }
 }
